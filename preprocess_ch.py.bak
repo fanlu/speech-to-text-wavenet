@@ -8,19 +8,45 @@ import data
 import re
 import scikits.audiolab
 import numpy as np
-from data_ch import createWordMapFromFile, str2index, str2phoneindex
-
 
 # data path
 _data_path = "asset/data/"
 
+wordMap = {}
+inverseWordMap = {}
+
+def createWordMapFromFile():
+  f = file("6855map.txt")
+  lines = f.readlines()
+  index = 0
+  for item in lines:
+    item = item.replace("\n", "")
+    item = item.replace("\r", "")
+    item.strip()
+    split = item.split(" ")
+    wordMap[split[1]] = split[0]
+    inverseWordMap[split[0]] = split[1]
+    index = 1
+  return
+
+def str2index(str_):
+  str_ = str_.strip().decode('utf-8')
+  l = []
+  for ch in str_:
+    if ch != u' ':
+      try:
+        l.append(wordMap[ch.encode('utf-8')])
+      except KeyError:
+        pass
+  return l
+  # p = re.compile(ur'[\u4e00-\u9fa5]')
+  # return p.split(str_)
 
 if __name__ == "__main__":
-  # createWordMapFromFile()
+  createWordMapFromFile()
   wavs = glob.glob(_data_path + "thchs30/data_thchs30/train/*.wav")
 
   writer = csv.writer(open(_data_path + "thchs30/preprocess/meta/train.csv", 'w'), delimiter=',')
-  writer2 = csv.writer(open(_data_path + "thchs30/preprocess/meta/train_phoneme.csv", 'w'), delimiter=',')
 
   mfcc_path = _data_path + "thchs30/preprocess/mfcc/"
   if not os.path.exists(mfcc_path):
@@ -46,14 +72,11 @@ if __name__ == "__main__":
     mfcc = librosa.feature.mfcc(wave, sr=sr)
 
     # get label index
-    la = open(_data_path + "thchs30/data_thchs30/data/" + fn + '.trn').readlines()
-    print(la)
-    label = str2index(la[0])
-    label2 = str2phoneindex(la[2])
+    label = str2index(open(_data_path + "thchs30/data_thchs30/data/" + fn + '.trn').readlines()[0])
+
     # save result ( exclude small mfcc data to prevent ctc loss )
     if len(label) < mfcc.shape[1]:
       # save meta info
       writer.writerow([fn] + label)
-      writer2.writerow([fn] + label2)
       # save mfcc
-      # np.save(target_filename, mfcc, allow_pickle=False)
+      np.save(target_filename, mfcc, allow_pickle=False)

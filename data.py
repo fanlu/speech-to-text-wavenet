@@ -107,7 +107,7 @@ class SpeechCorpus(object):
 
         # load meta file
         label, mfcc_file = [], []
-        with open(_data_path + 'preprocess/meta/%s.csv' % set_name) as csv_file:
+        with open(_data_path + 'preprocess/meta/%s_phoneme.csv' % set_name) as csv_file:
             reader = csv.reader(csv_file, delimiter=',')
             for row in reader:
                 # mfcc file

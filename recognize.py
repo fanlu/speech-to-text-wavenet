@@ -3,8 +3,8 @@ import sugartensor as tf
 import numpy as np
 import librosa
 from model import *
-import data
-
+import data_ch as data
+import editdistance
 
 __author__ = 'namju.kim@kakaobrain.com'
 

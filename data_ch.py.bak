@@ -5,9 +5,6 @@ _data_path = "asset/data/"
 wordMap = {}
 inverseWordMap = {}
 
-phoneMap = {}
-inversePhoneMap = {}
-
 
 def createWordMapFromFile():
   f = file(_data_path + "6855map.txt")
@@ -21,15 +18,6 @@ def createWordMapFromFile():
     wordMap[split[1]] = split[0]
     inverseWordMap[int(split[0])] = split[1]
     index = 1
-  return
-
-
-def createPhone():
-  f = file(_data_path + "thchs30/data_thchs30/lm_phone/lexicon.txt")
-  lines = f.readlines()
-  for i, item in enumerate(lines):
-    phoneMap[item.strip().split(" ")[0]] = i
-    inversePhoneMap[i] = item.strip().split(" ")[0]
   return
 
 
@@ -54,35 +42,12 @@ def index2str(index_list):
   return str_
 
 
-def str2phoneindex(str_):
-  str_ = str_.strip().split(" ")
-  l = []
-  for ch in str_:
-    if ch != u' ':
-      l.append(phoneMap[ch])
-  return l
-
-
-def phoneindex2str(index_list):
-  str_ = ''
-  for ch in index_list:
-    if ch > 0:
-      str_ += inversePhoneMap[ch] + " "
-    elif ch == 0:  # <EOS>
-      break
-  return str_
-
-def print_phoneindex(indices):
-  for index_list in indices:
-    print(phoneindex2str(index_list))
-
 # print list of index list
 def print_index(indices):
+  print(len(inverseWordMap))
   for index_list in indices:
     print(index2str(index_list))
 
 
 createWordMapFromFile()
-createPhone()
-#voca_size = len(wordMap)
-voca_size = len(phoneMap)
+voca_size = len(wordMap)

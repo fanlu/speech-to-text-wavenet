@@ -1,5 +1,6 @@
 import sugartensor as tf
-from data import SpeechCorpus, voca_size
+from data import SpeechCorpus
+from data_ch import voca_size
 from model import *
 
 
@@ -27,7 +28,6 @@ data = SpeechCorpus(batch_size=batch_size * tf.sg_gpus())
 inputs = tf.split(data.mfcc, tf.sg_gpus(), axis=0)
 # target sentence label
 labels = tf.split(data.label, tf.sg_gpus(), axis=0)
-
 # sequence length except zero-padding
 seq_len = []
 for input_ in inputs:
@@ -39,11 +39,20 @@ for input_ in inputs:
 def get_loss(opt):
     # encode audio feature
     logit = get_logit(opt.input[opt.gpu_index], voca_size=voca_size)
-    # CTC loss
-    return logit.sg_ctc(target=opt.target[opt.gpu_index], seq_len=opt.seq_len[opt.gpu_index])
+    var_list = tf.global_variables()
+    real_var_list = []
+    for item in var_list:
+	if 'W' in item.name:
+	    real_var_list.append(item)
+    loss = logit.sg_ctc(target=opt.target[opt.gpu_index], seq_len=opt.seq_len[opt.gpu_index])
+    
+    for item in real_var_list:
+    	loss += 0.03 * tf.nn.l2_loss(item)
+    return loss
+
 
 #
 # train
 #
 tf.sg_train(lr=0.0001, loss=get_loss(input=inputs, target=labels, seq_len=seq_len),
-            ep_size=data.num_batch, max_ep=50)
+            ep_size=data.num_batch, max_ep=2000)
