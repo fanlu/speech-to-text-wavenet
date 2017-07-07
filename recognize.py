@@ -60,9 +60,17 @@ with tf.Session() as sess:
 
     # restore parameters
     saver = tf.train.Saver()
-    saver.restore(sess, tf.train.latest_checkpoint('asset/train'))
+    saver.restore(sess, tf.train.latest_checkpoint('asset/train.phone'))
     # run session
     label = sess.run(y, feed_dict={x: mfcc})
-
+    print(label)
+    path = tf.sg_arg().file.split("/")
+    print(path[:-2])
+    ori0 = open("/".join(path[:-2] + ['data'] + [path[-1]]) + '.trn').readlines()[0]
+    print(ori0)
+    ori = open("/".join(path[:-2] + ['data'] + [path[-1]]) + '.trn').readlines()[2]
+    print(ori)
     # print label
-    data.print_index(label)
+    data.print_phoneindex(label)
+    lev = editdistance.eval(ori, data.phoneindex2str(label[0]))
+    print(lev, float(lev)/len(label[0]))

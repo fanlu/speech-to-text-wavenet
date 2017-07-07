@@ -16,23 +16,23 @@ def get_logit(x, voca_size):
         with tf.sg_context(name='block_%d_%d' % (block, rate)):
 
             # filter convolution
-            conv_filter = tensor.sg_aconv1d(size=size, rate=rate, act='tanh', bn=True, name='conv_filter')
+            conv_filter = tensor.sg_aconv1d(size=size, rate=rate, act='tanh', bn=True, name='conv_filter', regularizer='l2')
 
             # gate convolution
-            conv_gate = tensor.sg_aconv1d(size=size, rate=rate,  act='sigmoid', bn=True, name='conv_gate')
+            conv_gate = tensor.sg_aconv1d(size=size, rate=rate,  act='sigmoid', bn=True, name='conv_gate', regularizer='l2')
 
             # output by gate multiplying
             out = conv_filter * conv_gate
 
             # final output
-            out = out.sg_conv1d(size=1, dim=dim, act='tanh', bn=True, name='conv_out')
+            out = out.sg_conv1d(size=1, dim=dim, act='tanh', bn=True, name='conv_out', regularizer='l2')
 
             # residual and skip output
             return out + tensor, out
 
     # expand dimension
     with tf.sg_context(name='front'):
-        z = x.sg_conv1d(size=1, dim=num_dim, act='tanh', bn=True, name='conv_in')
+        z = x.sg_conv1d(size=1, dim=num_dim, act='tanh', bn=True, name='conv_in', regularizer='l2')
 
     # dilated conv block loop
     skip = 0  # skip connections
@@ -44,7 +44,7 @@ def get_logit(x, voca_size):
     # final logit layers
     with tf.sg_context(name='logit'):
         logit = (skip
-                 .sg_conv1d(size=1, act='tanh', bn=True, name='conv_1')
-                 .sg_conv1d(size=1, dim=voca_size, name='conv_2'))
+                 .sg_conv1d(size=1, act='tanh', bn=True, name='conv_1', regularizer='l2')
+                 .sg_conv1d(size=1, dim=voca_size, name='conv_2', regularizer='l2'))
 
     return logit
