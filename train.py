@@ -36,16 +36,36 @@ for input_ in inputs:
 def get_loss(opt):
   # encode audio feature
   logit = get_logit(opt.input[opt.gpu_index], voca_size=voca_size)
+  for i in tf.get_collection("regularization_losses"):
+    print(i)
+  print('--------------------')
+
+  train_list = tf.trainable_variables()
+
   var_list = tf.global_variables()
   real_var_list = []
   for item in var_list:
+    # print(item)
     if 'W' in item.name:
       real_var_list.append(item)
 
   loss = logit.sg_ctc(target=opt.target[opt.gpu_index], seq_len=opt.seq_len[opt.gpu_index])
+  # print(loss)
+  # tf.add_to_collection("losses", loss)
+  # losses = tf.get_collection("losses")
+  # losses += tf.get_collection("regularization_losses")
+  # for i in tf.get_collection("losses"):
+  #   print(i.name)
+  # print('++++++++++++++++++++')
+  # total_loss = tf.add_n(losses, name='total_loss')
+  # for item in real_var_list:
+  #   loss += 0.03 * tf.nn.l2_loss(item)
 
-  for item in real_var_list:
-    loss += 0.03 * tf.nn.l2_loss(item)
+  # for i in tf.get_collection("regularization_losses"):
+  #   loss += 0.03 * i
+
+  regular_loss = tf.sg_regularizer_loss(0.03)
+  loss += regular_loss
   return loss
 
 
@@ -53,4 +73,4 @@ def get_loss(opt):
 # train
 #
 tf.sg_train(lr=0.0001, loss=get_loss(input=inputs, target=labels, seq_len=seq_len),
-            ep_size=data.num_batch, max_ep=2000)
+            ep_size=data.num_batch, max_ep=50)

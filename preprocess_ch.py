@@ -46,7 +46,7 @@ if __name__ == "__main__":
     mfcc = librosa.feature.mfcc(wave, sr=sr)
 
     # get label index
-    la = open(_data_path + "thchs30/data_thchs30/data/" + fn + '.trn').readlines()
+    la = open(_data_path + "thchs30/data_thchs30/train/" + fn + '.trn').readlines()
     print(la)
     label = str2index(la[0])
     label2 = str2phoneindex(la[2])
@@ -56,4 +56,4 @@ if __name__ == "__main__":
       writer.writerow([fn] + label)
       writer2.writerow([fn] + label2)
       # save mfcc
-      # np.save(target_filename, mfcc, allow_pickle=False)
+      np.save(target_filename, mfcc, allow_pickle=False)
