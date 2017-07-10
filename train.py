@@ -3,19 +3,16 @@ from data import SpeechCorpus
 from data_ch import voca_size
 from model import *
 
-
 __author__ = 'namju.kim@kakaobrain.com'
-
 
 # set log level to debug
 tf.sg_verbosity(10)
-
 
 #
 # hyper parameters
 #
 
-batch_size = 16    # total batch size
+batch_size = 16  # total batch size
 
 #
 # inputs
@@ -31,24 +28,25 @@ labels = tf.split(data.label, tf.sg_gpus(), axis=0)
 # sequence length except zero-padding
 seq_len = []
 for input_ in inputs:
-    seq_len.append(tf.not_equal(input_.sg_sum(axis=2), 0.).sg_int().sg_sum(axis=1))
+  seq_len.append(tf.not_equal(input_.sg_sum(axis=2), 0.).sg_int().sg_sum(axis=1))
 
 
 # parallel loss tower
 @tf.sg_parallel
 def get_loss(opt):
-    # encode audio feature
-    logit = get_logit(opt.input[opt.gpu_index], voca_size=voca_size)
-    var_list = tf.global_variables()
-    real_var_list = []
-    for item in var_list:
-	if 'W' in item.name:
-	    real_var_list.append(item)
-    loss = logit.sg_ctc(target=opt.target[opt.gpu_index], seq_len=opt.seq_len[opt.gpu_index])
-    
-    for item in real_var_list:
-    	loss += 0.03 * tf.nn.l2_loss(item)
-    return loss
+  # encode audio feature
+  logit = get_logit(opt.input[opt.gpu_index], voca_size=voca_size)
+  var_list = tf.global_variables()
+  real_var_list = []
+  for item in var_list:
+    if 'W' in item.name:
+      real_var_list.append(item)
+
+  loss = logit.sg_ctc(target=opt.target[opt.gpu_index], seq_len=opt.seq_len[opt.gpu_index])
+
+  for item in real_var_list:
+    loss += 0.03 * tf.nn.l2_loss(item)
+  return loss
 
 
 #
